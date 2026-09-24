@@ -1,4 +1,8 @@
 spring:
+  mvc:
+    problemdetails:
+      enabled: true   # même format d'erreur pour les erreurs techniques
+
   application:
     name: dinasa-fact-api
   datasource:
