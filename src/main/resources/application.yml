@@ -7,19 +7,20 @@ spring:
     name: dinasa-fact-api
   datasource:
     # sera vérifié à l'étape 1.1 (SQL Server)
-    url: jdbc:sqlserver://localhost:1433;databaseName=NOM_BASE_FACTURATION;encrypt=true;trustServerCertificate=true
+    #url: jdbc:sqlserver://localhost:1433;databaseName=NOM_BASE_FACTURATION;encrypt=true;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;databaseName=DINASA_FACTURATION_DB_bk;encrypt=true;trustServerCertificate=true
     username: dinasa_app
     password: ${DB_PASSWORD:Dev_Passw0rd!}
   jpa:
     open-in-view: false
-    database-platform: org.hibernate.dialect.SQLServerDialect
+    #database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
       ddl-auto: none      # IMPORTANT : ne jamais créer ni modifier les tables existantes
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    properties:
+    #properties:
       # permet de démarrer même si la base n'est pas encore prête
-      hibernate.boot.allow_jdbc_metadata_access: false
+      #hibernate.boot.allow_jdbc_metadata_access: false
 
 management:
   endpoints:
