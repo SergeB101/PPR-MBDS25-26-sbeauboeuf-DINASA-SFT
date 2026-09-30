@@ -3,14 +3,21 @@ package ht.dinasa.fact.facturation.infrastructure;
 import ht.dinasa.fact.facturation.application.BonsAFacturer;
 import ht.dinasa.fact.facturation.domain.BonDeLivraison;
 import ht.dinasa.fact.facturation.domain.MethodeTarification;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.YearMonth;
 import java.util.List;
 
+/**
+ * Sélection des bons à facturer. Reprend les règles de l'ancienne procédure
+ * dbo.SP_MOUVEMENT_LIST_ALL_BY_CRITERIONS_4_FACTURE, plus deux filtres de sécurité
+ * (livraisons uniquement, bons non annulés).
+ */
 @Repository
 class BonsAFacturerSql implements BonsAFacturer {
 
@@ -25,23 +32,33 @@ class BonsAFacturerSql implements BonsAFacturer {
                    cl.CODE_POINT_LIVRAISON,
                    (SELECT COALESCE(SUM(md.VolumeCommande), 0)
                       FROM dbo.MouvementDetail md
-                     WHERE md.CodeMouvement = m.ID_Mouvement) AS QUANTITE
+                     WHERE md.CodeMouvement = m.ID_Mouvement
+                       AND md.VolumeCommande > :volumeMinimum) AS QUANTITE
               FROM dbo.Mouvement m
               JOIN dbo.Camion c   ON c.ID_Camion = m.CodeCamion
               JOIN FACT.CLIENT cl ON cl.ID_CLIENT = COALESCE(NULLIF(m.CodeClientFact, 0), m.CodeClient)
              WHERE m.CodeTypeMouvement = 2
                AND m.estRenverse = 0
-               AND m.DateMouvement >= :debut AND m.DateMouvement < :fin
+               AND m.CodeClient IS NOT NULL
+               AND m.DateLivraison >= :debut AND m.DateLivraison < :fin
+               AND LEFT(c.CamionCode, 2) NOT IN (:prefixesExclus)
                AND (:inclureDejaFactures = 1
-                    OR NOT EXISTS (SELECT 1 FROM FACT.DETAIL_FACTURE df
-                                    WHERE df.CODE_MOUVEMENT = m.ID_Mouvement))
-             ORDER BY CODE_TRANSPORTEUR, m.DateMouvement, m.ID_Mouvement
+                    OR ((m.CodeFacture IS NULL OR m.CodeFacture = 0)
+                        AND NOT EXISTS (SELECT 1 FROM FACT.DETAIL_FACTURE df
+                                         WHERE df.CODE_MOUVEMENT = m.ID_Mouvement)))
+             ORDER BY CODE_TRANSPORTEUR, c.CamionCode, m.DateMouvement, m.ID_Mouvement
             """;
 
     private final JdbcClient jdbc;
+    private final List<String> prefixesExclus;
+    private final BigDecimal volumeMinimum;
 
-    BonsAFacturerSql(JdbcClient jdbc) {
+    BonsAFacturerSql(JdbcClient jdbc,
+                     @Value("${dinasa.facturation.prefixes-camions-exclus}") List<String> prefixesExclus,
+                     @Value("${dinasa.facturation.volume-minimum-par-ligne}") BigDecimal volumeMinimum) {
         this.jdbc = jdbc;
+        this.prefixesExclus = prefixesExclus;
+        this.volumeMinimum = volumeMinimum;
     }
 
     @Override
@@ -49,6 +66,8 @@ class BonsAFacturerSql implements BonsAFacturer {
         return jdbc.sql(SQL)
                 .param("debut", mois.atDay(1))
                 .param("fin", mois.plusMonths(1).atDay(1))
+                .param("volumeMinimum", volumeMinimum)
+                .param("prefixesExclus", prefixesExclus)
                 .param("inclureDejaFactures", inclureDejaFactures ? 1 : 0)
                 .query(this::versBon)
                 .list();

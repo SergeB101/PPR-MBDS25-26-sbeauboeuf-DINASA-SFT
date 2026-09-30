@@ -1,10 +1,17 @@
 # Vérifications à faire
 
 - [ ] Tarif utilisé pour les camions de type 2 (requête A)
-- [ ] Arrondi ou coupure des centimes (requête B)
+- [x] Arrondi ou coupure des centimes (requête B)
+  - coupure confirmée (parité mars 2026)
 - [ ] Code de production de GenererFacture.aspx.vb (règle exacte du choix du tarif)
 - [ ] Texte de dbo.SP_MOUVEMENT_LIST_ALL_BY_CRITERIONS_4_FACTURE (quels bons sont proposés à la facturation)
 - [ ] Mécanisme NEW_RATE_APPLIED / OLD_RATE_ID_FACTURE (refacturation ?)
 - [ ] Ce qui alimente dbo.Livraison_Acpacc depuis Sage 300
 - [ ] Sens de « OT » et validité du tarif n° 15
 - [ ] Validation métier : annulation limitée aux bons créés par la récupération
+- - [ ] Règle des 50 gallons : seules les lignes de bon > 50 gallons sont facturées (pourquoi ?)
+- [ ] Liste des préfixes de camions exclus (OT, OC, OD, OE, OH, OJ, OM) : toujours valable ?
+- [x] Arrondi : coupure au centime confirmée (parité mars 2026)
+- - [x] 4 (+2) bons de mars facturés à 0 : lignes modifiées manuellement le 27/04/2026 (confirmé)
+- [ ] Fonction « corriger une ligne de facture » : motif obligatoire + audit (à ajouter au périmètre)
+- [ ] Recommandation : limiter les modifications directes en base après mise en production

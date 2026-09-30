@@ -9,9 +9,13 @@ import java.util.Objects;
  */
 public record Montant(BigDecimal valeur, Devise devise) {
 
-    /** Règle d'arrondi unique pour toute l'application (à confirmer par les tests de parité). */
+    /**
+     * Règle unique pour toute l'application : on COUPE après 2 décimales (pas d'arrondi),
+     * comme l'ancien système. Confirmé par le test de parité de mars 2026
+     * (ex. 651,80 × 0,07 = 45,626 → 45,62).
+     */
     public static final int DECIMALES = 2;
-    public static final RoundingMode ARRONDI = RoundingMode.HALF_UP;
+    public static final RoundingMode ARRONDI = RoundingMode.DOWN;
 
     public Montant {
         Objects.requireNonNull(valeur, "valeur obligatoire");

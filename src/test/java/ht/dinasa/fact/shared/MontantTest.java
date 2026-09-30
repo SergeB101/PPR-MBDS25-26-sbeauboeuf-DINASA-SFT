@@ -28,4 +28,10 @@ class MontantTest {
         assertThatThrownBy(() -> usd.plus(htg))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void les_centimes_sont_coupes_et_non_arrondis_comme_l_ancien_systeme() {
+        Montant m = Montant.produit(new BigDecimal("651.80"), new BigDecimal("0.070000"), Devise.USD);
+        assertThat(m.valeur()).isEqualByComparingTo("45.62");
+    }
 }

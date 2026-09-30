@@ -30,4 +30,14 @@ public record Facture(String numero, long codeTransporteur, LocalDateTime dateGe
                 .map(LigneFacture::quantiteCommandee)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+    /**
+     * Somme EXACTE de quantité × prix, sans coupure ligne par ligne.
+     * Correspond à la colonne MONTANT_TRANSACTION de l'ancien système.
+     */
+    public BigDecimal montantTransactionExact() {
+        return lignes.stream()
+                .map(l -> l.quantiteCommandee().multiply(l.prixAuGallon()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }
