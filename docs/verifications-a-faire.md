@@ -24,3 +24,9 @@
 - - [ ] Arriéré : 851 factures non postées, dont 81 avec en-tête ≠ somme des lignes (à corriger avant posting)
 - - [ ] Services en attente : filtre par devise de la facture ajouté (l'ancien code l'ignorait) — à valider
 - [ ] Services en attente pris selon le mois de GÉNÉRATION de la facture (pas de livraison) — à confirmer
+- - [x] Suppression de ligne : l'ancien système laissait le bon « facturé » à jamais (bons perdus) — corrigé
+- [ ] Combien de bons « perdus » existent déjà ? (CodeFacture pointant vers une ligne supprimée)
+- [ ] Service supprimé d'une facture = remis « en attente » (comportement repris de l'ancien système) — à confirmer
+- - [ ] Posting v2 : FACT.[TRANSACTION].CODE_FACTURE pointe vers une LIGNE (FK_TRANSACTION_DETAILFACTURE), pas vers l'en-tête
+- [ ] Aucune FK entre DETAIL_FACTURE et FACTURE : contrôler les lignes orphelines existantes
+- - [ ] Fusion de factures : jamais disponible pour le gallon (FACTURATION_MOIS vide) — non reprise, besoin à confirmer
