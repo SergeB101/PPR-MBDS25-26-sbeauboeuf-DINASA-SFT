@@ -3,10 +3,12 @@ package ht.dinasa.fact.facturation.web;
 import ht.dinasa.fact.facturation.application.ConsultationFactures;
 import ht.dinasa.fact.facturation.application.CriteresFactures;
 import ht.dinasa.fact.facturation.application.FicheFacture;
+import ht.dinasa.fact.facturation.application.PostingFactures;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,9 +21,11 @@ import java.util.List;
 class FacturesController {
 
     private final ConsultationFactures consultation;
+    private final PostingFactures posting;
 
-    FacturesController(ConsultationFactures consultation) {
+    FacturesController(ConsultationFactures consultation, PostingFactures posting) {
         this.consultation = consultation;
+        this.posting = posting;
     }
 
     @Operation(summary = "Liste des factures (filtres facultatifs, du plus récent au plus ancien)")
@@ -39,6 +43,13 @@ class FacturesController {
     @Operation(summary = "Détail d'une facture avec toutes ses lignes")
     @GetMapping("/{id}")
     FicheFacture detail(@PathVariable long id) {
+        return consultation.detail(id);
+    }
+
+    @Operation(summary = "Poster (valider et verrouiller) une facture")
+    @PostMapping("/{id}/poster")
+    FicheFacture poster(@PathVariable long id) {
+        posting.poster(id);
         return consultation.detail(id);
     }
 }

@@ -15,3 +15,9 @@
 - - [x] 4 (+2) bons de mars facturés à 0 : lignes modifiées manuellement le 27/04/2026 (confirmé)
 - [ ] Fonction « corriger une ligne de facture » : motif obligatoire + audit (à ajouter au périmètre)
 - [ ] Recommandation : limiter les modifications directes en base après mise en production
+- - [ ] PS_POSTER_FACTURE_BY_ID_FACTURE contient « select * from @t / return » : posting inopérant ? (version prod à vérifier)
+- [ ] Soldes transporteurs (Personne.Balance / BalanceHTG) cohérents avec FACT.[TRANSACTION] ?
+- - [x] Posting inopérant depuis le 31/05/2022 (procédure modifiée) ; aucune facture postée depuis ≥ 01/2025
+- [x] Relevé FACT.[TRANSACTION] non alimenté depuis le 01/09/2021 ; soldes Personne.Balance figés
+- [ ] DÉCISION MÉTIER : où sont suivis les paiements (Sage 300 ? Excel ?) ; relancer les comptes ?
+  solde de départ ? traitement des factures non postées ? posting vers Sage 300 ?
