@@ -70,4 +70,13 @@ class GenerationFacturesTests {
         ResultatCalcul seconde = generation.generer(MARS_2026, List.of());
         assertThat(seconde.factures()).isEmpty();
     }
+
+    @Test
+    void chaque_facture_generee_est_tracee_dans_le_journal() {
+        ResultatCalcul r = generation.generer(MARS_2026, List.of());
+
+        Long traces = jdbc.sql("SELECT COUNT(*) FROM APP.JOURNAL_AUDIT WHERE ACTION = 'FACTURE_GENEREE'")
+                .query(Long.class).single();
+        assertThat(traces).isEqualTo(r.factures().size());
+    }
 }

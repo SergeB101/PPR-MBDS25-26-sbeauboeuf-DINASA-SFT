@@ -2,8 +2,11 @@ package ht.dinasa.fact.facturation.application;
 
 import ht.dinasa.fact.facturation.domain.BonDeLivraison;
 import ht.dinasa.fact.facturation.domain.CalculFactureGallon;
+import ht.dinasa.fact.facturation.domain.Facture;
 import ht.dinasa.fact.facturation.domain.ResultatCalcul;
 import ht.dinasa.fact.shared.UtilisateurCourant;
+import ht.dinasa.fact.shared.audit.EntreeAudit;                  // ← AUDIT
+import ht.dinasa.fact.shared.audit.Journal;                      // ← AUDIT
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;                                            // ← AUDIT
 
 /** Calcule ET enregistre les factures d'un mois, en une seule opération « tout ou rien ». */
 @Service
@@ -22,15 +26,18 @@ public class GenerationFactures {
     private final DepotFactures depot;
     private final UtilisateurCourant utilisateur;
     private final Clock horloge;
+    private final Journal journal;                               // ← AUDIT
     private final CalculFactureGallon calcul = new CalculFactureGallon();
 
     public GenerationFactures(BonsAFacturer bons, SourceTarifs tarifs, DepotFactures depot,
-                              UtilisateurCourant utilisateur, Clock horloge) {
+                              UtilisateurCourant utilisateur, Clock horloge,
+                              Journal journal) {                 // ← AUDIT
         this.bons = bons;
         this.tarifs = tarifs;
         this.depot = depot;
         this.utilisateur = utilisateur;
         this.horloge = horloge;
+        this.journal = journal;                                  // ← AUDIT
     }
 
     /**
@@ -45,6 +52,21 @@ public class GenerationFactures {
         ResultatCalcul resultat = calcul.calculer(aFacturer, tarifs.actifs(), LocalDateTime.now(horloge));
         if (!resultat.factures().isEmpty()) {
             depot.enregistrer(resultat.factures(), utilisateur.login());
+
+            // ← AUDIT : une entrée par facture créée
+            for (Facture f : resultat.factures()) {
+                journal.enregistrer(new EntreeAudit(
+                        "FACTURE_GENEREE",
+                        "FACTURE",
+                        f.numero(),               // identifiant = numéro de facture
+                        null,                     // id pas encore connu ici
+                        null,
+                        null,
+                        Map.of("transporteur", f.codeTransporteur(),
+                                "lignes", f.lignes().size(),
+                                "montant", f.total().valeur(),
+                                "mois", mois.toString())));
+            }
         }
         return resultat;
     }

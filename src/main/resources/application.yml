@@ -11,6 +11,14 @@ spring:
     url: jdbc:sqlserver://localhost:1433;databaseName=DINASA_FACTURATION_DB_bk;encrypt=true;trustServerCertificate=true
     username: dinasa_app
     password: ${DB_PASSWORD:Dev_Passw0rd!}
+
+  flyway:
+    enabled: true
+    schemas: APP              # Flyway ne gère QUE ce schéma
+    default-schema: APP
+    create-schemas: false     # le schéma est créé par l'administrateur
+    locations: classpath:db/migration
+    
   jpa:
     open-in-view: false
     #database-platform: org.hibernate.dialect.SQLServerDialect

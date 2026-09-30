@@ -6,6 +6,8 @@ import ht.dinasa.fact.facturation.application.DepotServices.TypeService;
 import ht.dinasa.fact.shared.Devise;
 import ht.dinasa.fact.shared.Montant;
 import ht.dinasa.fact.shared.UtilisateurCourant;
+import ht.dinasa.fact.shared.audit.EntreeAudit;                  // ← AUDIT
+import ht.dinasa.fact.shared.audit.Journal;                      // ← AUDIT
 import ht.dinasa.fact.shared.erreurs.ElementIntrouvable;
 import ht.dinasa.fact.shared.erreurs.ErreurMetier;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;                                            // ← AUDIT
 
 /** Services à déduire (ou à ajouter) sur une facture non postée. */
 @Service
@@ -22,10 +25,13 @@ public class ServicesFacture {
 
     private final DepotServices depot;
     private final UtilisateurCourant utilisateur;
+    private final Journal journal;                               // ← AUDIT
 
-    public ServicesFacture(DepotServices depot, UtilisateurCourant utilisateur) {
+    public ServicesFacture(DepotServices depot, UtilisateurCourant utilisateur,
+                           Journal journal) {                    // ← AUDIT
         this.depot = depot;
         this.utilisateur = utilisateur;
+        this.journal = journal;                                  // ← AUDIT
     }
 
     @Transactional(readOnly = true)
@@ -48,6 +54,16 @@ public class ServicesFacture {
 
         long idLigne = depot.ajouterLigneService(facture, type, montant, note, par);
         depot.enregistrerServiceFacture(facture, type, montant, dateService, note, idLigne, par);
+
+        // ← AUDIT
+        journal.enregistrer(new EntreeAudit(
+                "SERVICE_AJOUTE",
+                "DETAIL_FACTURE",
+                idLigne,                      // la nouvelle ligne de service
+                idFacture,
+                note,                         // la note saisie sert de motif (peut être vide)
+                null,                         // rien « avant » : c'est un ajout
+                Map.of("type", type.libelle(), "montant", montant, "dateService", dateService.toString())));
     }
 
     /** @return le nombre de services incorporés */
@@ -60,10 +76,19 @@ public class ServicesFacture {
 
         for (ServiceEnAttente service : enAttente) {
             TypeService type = typeValide(service.idType());
-            // comme l'ancien système : valeur absolue saisie, puis signe du type
             BigDecimal montant = montantSigne(service.montant().abs(), type, facture);
             long idLigne = depot.ajouterLigneService(facture, type, montant, service.note(), par);
             depot.marquerServiceFacture(service.id(), idLigne, par);
+
+            // ← AUDIT : une entrée par service incorporé
+            journal.enregistrer(new EntreeAudit(
+                    "SERVICE_INCORPORE",
+                    "DETAIL_FACTURE",
+                    idLigne,
+                    idFacture,
+                    service.note(),
+                    null,
+                    Map.of("idService", service.id(), "type", type.libelle(), "montant", montant)));
         }
         return enAttente.size();
     }
@@ -95,7 +120,6 @@ public class ServicesFacture {
         return type;
     }
 
-    /** Applique le signe du type et la règle des centimes (coupure). */
     private static BigDecimal montantSigne(BigDecimal montant, TypeService type, EnTeteFacture facture) {
         return new Montant(montant.multiply(BigDecimal.valueOf(type.signe())),
                 Devise.valueOf(facture.devise().trim())).valeur();
