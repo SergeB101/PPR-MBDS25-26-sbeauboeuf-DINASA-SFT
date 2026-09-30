@@ -21,3 +21,6 @@
 - [x] Relevé FACT.[TRANSACTION] non alimenté depuis le 01/09/2021 ; soldes Personne.Balance figés
 - [ ] DÉCISION MÉTIER : où sont suivis les paiements (Sage 300 ? Excel ?) ; relancer les comptes ?
   solde de départ ? traitement des factures non postées ? posting vers Sage 300 ?
+- - [ ] Arriéré : 851 factures non postées, dont 81 avec en-tête ≠ somme des lignes (à corriger avant posting)
+- - [ ] Services en attente : filtre par devise de la facture ajouté (l'ancien code l'ignorait) — à valider
+- [ ] Services en attente pris selon le mois de GÉNÉRATION de la facture (pas de livraison) — à confirmer
