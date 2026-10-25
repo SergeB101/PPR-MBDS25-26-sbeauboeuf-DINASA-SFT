@@ -68,6 +68,7 @@ class ConfigurationSecurite {
                         .requestMatchers(HttpMethod.GET, "/api/v1/referentiel/**").hasAuthority(REFERENTIEL_CONSULTER.name())
                         .requestMatchers(HttpMethod.GET, "/api/v1/tableaux-de-bord/**").hasAuthority(TABLEAU_DE_BORD_CONSULTER.name())
                         // Tout ce qui n'est pas listé est REFUSÉ
+                        .requestMatchers(HttpMethod.GET, "/api/v1/exports/**").hasAuthority(FACTURES_CONSULTER.name())
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(convertisseur)));
         return http.build();
