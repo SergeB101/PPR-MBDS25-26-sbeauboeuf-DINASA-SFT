@@ -1,7 +1,10 @@
 package ht.dinasa.fact.shared.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,10 +12,12 @@ import org.springframework.context.annotation.Configuration;
 public class DocumentationApi {
 
     @Bean
-    public OpenAPI openApi() {
-        return new OpenAPI().info(new Info()
-                .title("DINASA – API Facturation transporteurs")
-                .version("v1")
-                .description("Factures, relevés de compte et paramètres de facturation."));
+    OpenAPI documentation() {
+        return new OpenAPI()
+                .info(new Info().title("DINASA – API Facturation transporteurs").version("v1")
+                        .description("Se connecter avec /api/v1/auth/connexion, puis coller le jeton dans « Authorize »."))
+                .components(new Components().addSecuritySchemes("jeton",
+                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList("jeton"));
     }
 }

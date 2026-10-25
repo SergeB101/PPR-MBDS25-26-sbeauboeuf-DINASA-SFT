@@ -49,3 +49,13 @@ dinasa:
     prefixes-camions-exclus: OT,OC,OD,OE,OH,OJ,OM
     # Seules les lignes de bon STRICTEMENT supérieures à ce volume comptent (règle de l'ancien système)
     volume-minimum-par-ligne: 50
+  securite:
+    jwt:
+      secret: ${JWT_SECRET:dev-local-uniquement-a-changer-en-production-0123456789}
+      duree: 8h
+    tentatives-max: 5
+    duree-blocage: 15m
+    origines-autorisees: http://localhost:5173
+    initialisation:
+      login: ${DINASA_INIT_LOGIN:}
+      mot-de-passe: ${DINASA_INIT_MDP:}
