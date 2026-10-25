@@ -26,6 +26,9 @@ public record LigneAccpac(
 
     public List<TypeAnomalie> anomalies() {
         List<TypeAnomalie> liste = new ArrayList<>();
+        if (noFacture == null || noFacture.isBlank()) {
+            liste.add(TypeAnomalie.NUMERO_FACTURE_ABSENT);
+        }
         if (codeCamion == null || codeCamion.isBlank()) {
             liste.add(TypeAnomalie.CAMION_NON_PRECISE);
         } else if (idCamion == null) {

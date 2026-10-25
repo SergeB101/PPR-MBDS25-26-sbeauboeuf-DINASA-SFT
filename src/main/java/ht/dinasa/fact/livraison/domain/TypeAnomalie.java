@@ -6,7 +6,8 @@ public enum TypeAnomalie {
     CAMION_INCONNU("Camion inconnu dans la base", true),
     CLIENT_INCONNU("Client inconnu dans la base", true),
     TRANSPORTEUR_INCONNU("Le camion n'a pas de transporteur connu", true),
-    PRODUIT_INCONNU("Produit inconnu (le bon est créé quand même)", false);
+    PRODUIT_INCONNU("Produit inconnu (le bon est créé quand même)", false),
+    NUMERO_FACTURE_ABSENT("Numéro de facture ACCPAC absent", true);
 
     private final String libelle;
     private final boolean bloquante;

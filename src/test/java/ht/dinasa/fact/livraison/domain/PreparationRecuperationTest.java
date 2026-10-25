@@ -33,12 +33,24 @@ class PreparationRecuperationTest {
         assertThat(bon.idsLignesAccpac()).containsExactly(1L, 2L);
     }
 
+//    @Test
+//    void les_lignes_OT_sont_ignorees() {
+//        var r = preparation.preparer(List.of(ligne(1, "IN002", "OT15", 10L, 100L, 500L, 1, "3000")));
+//
+//        assertThat(r.bons()).isEmpty();
+//        assertThat(r.lignesOT()).isEqualTo(1);
+//    }
+
     @Test
-    void les_lignes_OT_sont_ignorees() {
+    void une_ligne_OT_donne_un_bon_sans_detail_comme_l_ancien_systeme() {
         var r = preparation.preparer(List.of(ligne(1, "IN002", "OT15", 10L, 100L, 500L, 1, "3000")));
 
-        assertThat(r.bons()).isEmpty();
         assertThat(r.lignesOT()).isEqualTo(1);
+        assertThat(r.anomalies()).isEmpty();
+        assertThat(r.bons()).singleElement().satisfies(b -> {
+            assertThat(b.ot()).isTrue();
+            assertThat(b.details()).isEmpty();
+        });
     }
 
     @Test

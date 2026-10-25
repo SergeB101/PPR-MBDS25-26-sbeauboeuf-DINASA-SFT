@@ -30,3 +30,6 @@
 - - [ ] Posting v2 : FACT.[TRANSACTION].CODE_FACTURE pointe vers une LIGNE (FK_TRANSACTION_DETAILFACTURE), pas vers l'en-tête
 - [ ] Aucune FK entre DETAIL_FACTURE et FACTURE : contrôler les lignes orphelines existantes
 - - [ ] Fusion de factures : jamais disponible pour le gallon (FACTURATION_MOIS vide) — non reprise, besoin à confirmer
+- - [ ] Récupération : l'ancienne procédure crée des bons OT SANS détail (218 en avril 2026) — reproduit pour la parité ; utiles ou à supprimer ?
+- [ ] Transporteur absent des fiches Personne : ligne ignorée en silence par l'ancienne procédure → nouvelle anomalie « transporteur inconnu »
+- 

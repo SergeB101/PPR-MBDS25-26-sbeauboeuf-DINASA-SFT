@@ -1,11 +1,12 @@
 package ht.dinasa.fact.livraison.domain;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Prépare une récupération : bons à créer, anomalies, lignes OT ignorées. Rien n'est écrit. */
+/** Prépare une récupération : bons à créer et anomalies. Rien n'est écrit. */
 public class PreparationRecuperation {
 
     public record LigneEnAnomalie(LigneAccpac ligne, List<TypeAnomalie> anomalies) {
@@ -20,7 +21,7 @@ public class PreparationRecuperation {
         }
     }
 
-    private record Cle(String noFacture, java.time.LocalDate date, long client, long camion, long transporteur) {
+    private record Cle(String noFacture, LocalDate date, long client, long camion, long transporteur, boolean ot) {
     }
 
     public Resultat preparer(List<LigneAccpac> lignes) {
@@ -29,25 +30,25 @@ public class PreparationRecuperation {
         int lignesOT = 0;
 
         for (LigneAccpac l : lignes) {
-            if (l.estOT()) {
+            boolean ot = l.estOT();
+            if (ot) {
                 lignesOT++;
-                continue;
             }
             List<TypeAnomalie> types = l.anomalies();
-            if (!types.isEmpty()) {
+            if (!ot && !types.isEmpty()) {
                 anomalies.add(new LigneEnAnomalie(l, types));
             }
             if (!l.estRecuperable()) {
                 continue;
             }
-            Cle cle = new Cle(l.noFacture().trim(), l.date(), l.idClient(), l.idCamion(), l.idTransporteur());
+            Cle cle = new Cle(l.noFacture().trim(), l.date(), l.idClient(), l.idCamion(), l.idTransporteur(), ot);
             groupes.computeIfAbsent(cle, c -> new ArrayList<>()).add(l);
         }
 
         List<BonACreer> bons = new ArrayList<>();
         groupes.forEach((cle, groupe) -> bons.add(new BonACreer(
-                cle.noFacture(), cle.date(), cle.client(), cle.camion(), cle.transporteur(),
-                groupe.stream()
+                cle.noFacture(), cle.date(), cle.client(), cle.camion(), cle.transporteur(), cle.ot(),
+                cle.ot() ? List.of() : groupe.stream()
                         .map(l -> new BonACreer.Detail(l.idProduit(), l.volumeFourni(), l.volumeFourni(), l.volumeLivre()))
                         .toList(),
                 groupe.stream().map(LigneAccpac::idLigne).toList())));

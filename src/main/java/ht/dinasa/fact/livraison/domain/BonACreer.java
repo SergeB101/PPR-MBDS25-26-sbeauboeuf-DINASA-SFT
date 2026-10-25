@@ -4,13 +4,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Un bon de livraison à créer : un par facture ACCPAC (et par client/camion/transporteur/date). */
+/**
+ * Un bon de livraison à créer : un par facture ACCPAC (et par client/camion/transporteur/date).
+ * Un bon OT n'a pas de détail (comportement de l'ancienne procédure, conservé pour la parité).
+ */
 public record BonACreer(
         String noFacture,
         LocalDate date,
         long idClient,
         long idCamion,
         long idTransporteur,
+        boolean ot,
         List<Detail> details,
         List<Long> idsLignesAccpac) {
 
