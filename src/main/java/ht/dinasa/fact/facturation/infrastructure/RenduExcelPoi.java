@@ -87,7 +87,7 @@ class RenduExcelPoi implements RenduExcel {
                 total.createCell(9).setCellFormula("SUM(J" + (premiere + 1) + ":J" + r + ")");
                 total.getCell(9).setCellStyle(st.total());
             }
-            largeurs(s, 10, 12, 18, 12, 32, 26, 30, 12, 10, 14);
+            largeurs(s, 14, 12, 18, 12, 32, 26, 30, 12, 10, 14);
             s.createFreezePane(0, 7);
         });
     }
@@ -113,16 +113,28 @@ class RenduExcelPoi implements RenduExcel {
                 texte(row, 7, e.devise(), null);
                 texte(row, 8, e.postee() ? "Oui" : "Non", null);
             }
-            if (!factures.isEmpty()) {
-                Row total = s.createRow(r);
-                texte(total, 5, "TOTAL", st.entete());
-                total.createCell(6).setCellFormula("SUM(G4:G" + r + ")");
-                total.getCell(6).setCellStyle(st.total());
-                s.setAutoFilter(new CellRangeAddress(2, r - 1, 0, 8));
-            }
-            largeurs(s, 10, 30, 12, 12, 32, 12, 16, 8, 8);
-            s.createFreezePane(0, 3);
-        });
+                    if (!factures.isEmpty()) {
+                        int derniere = r;                       // dernière ligne de données (numérotation Excel)
+                        List<String> devises = factures.stream().map(EnTete::devise).distinct().sorted().toList();
+                        for (String devise : devises) {
+                            Row total = s.createRow(r++);
+                            texte(total, 5, "TOTAL " + devise, st.entete());
+                            total.createCell(6).setCellFormula(
+                                    "SUMIF(H4:H" + derniere + ",\"" + devise + "\",G4:G" + derniere + ")");
+                            total.getCell(6).setCellStyle(st.total());
+                        }
+                        s.setAutoFilter(new CellRangeAddress(2, derniere - 1, 0, 8));
+                    }
+//            if (!factures.isEmpty()) {
+//                Row total = s.createRow(r);
+//                texte(total, 5, "TOTAL", st.entete());
+//                total.createCell(6).setCellFormula("SUM(G4:G" + r + ")");
+//                total.getCell(6).setCellStyle(st.total());
+//                s.setAutoFilter(new CellRangeAddress(2, r - 1, 0, 8));
+//            }
+//            largeurs(s, 10, 30, 12, 12, 32, 12, 16, 8, 8);
+//            s.createFreezePane(0, 3);
+       });
     }
 
     // ---------- outils ----------
