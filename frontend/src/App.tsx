@@ -1,3 +1,4 @@
+import TableauDeBord from "@/features/tableau-de-bord/TableauDeBord"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router"
 import { Autorisation, RouteProtegee } from "@/auth/Protections"
 import Coquille from "@/layout/Coquille"
@@ -10,7 +11,8 @@ export default function App() {
         <Routes>
           <Route path="/connexion" element={<Connexion />} />
           <Route element={<RouteProtegee><Coquille /></RouteProtegee>}>
-            <Route index element={<EnConstruction titre="Tableau de bord" />} />
+            <Route index element={
+              <Autorisation permission="TABLEAU_DE_BORD_CONSULTER"><TableauDeBord /></Autorisation>} />
             <Route path="factures" element={
               <Autorisation permission="FACTURES_CONSULTER"><EnConstruction titre="Factures" /></Autorisation>} />
             <Route path="generation" element={

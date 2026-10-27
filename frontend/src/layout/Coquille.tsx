@@ -16,8 +16,10 @@ export default function Coquille() {
     const { profil, peut, deconnecter } = useSession()
 
     return (
-        <div className="flex min-h-svh">
-            <aside className="w-60 shrink-0 border-r bg-muted/40 p-4">
+        // Le cadre fait exactement la hauteur de la fenêtre et ne défile pas lui-même
+        <div className="flex h-svh overflow-hidden">
+            {/* Menu latéral : toujours visible, défile seul s'il devient trop long */}
+            <aside className="flex w-60 shrink-0 flex-col overflow-y-auto border-r bg-muted/40 p-4">
                 <div className="mb-6 px-2 text-lg font-semibold">DINASA Fact</div>
                 <nav className="grid gap-1">
                     {MENU.filter((m) => peut(m.permission)).map((m) => (
@@ -29,12 +31,16 @@ export default function Coquille() {
                     ))}
                 </nav>
             </aside>
-            <div className="flex flex-1 flex-col">
-                <header className="flex items-center justify-end gap-4 border-b px-6 py-3">
+
+            <div className="flex min-w-0 flex-1 flex-col">
+                {/* En-tête : toujours visible */}
+                <header className="flex shrink-0 items-center justify-end gap-4 border-b bg-background px-6 py-3">
                     <span className="text-sm text-muted-foreground">{profil?.nom || profil?.login}</span>
                     <Button variant="outline" size="sm" onClick={deconnecter}>Se déconnecter</Button>
                 </header>
-                <main className="flex-1 p-6">
+
+                {/* Seule cette zone défile */}
+                <main className="flex-1 overflow-y-auto p-6">
                     <Outlet />
                 </main>
             </div>
