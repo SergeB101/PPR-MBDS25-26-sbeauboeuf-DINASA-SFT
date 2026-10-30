@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router"
 import { useState } from "react"
 import type { ReactNode } from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -37,6 +38,7 @@ export default function TableauDeBord() {
     const [annee, setAnnee] = useState(aujourdhui.getFullYear())
     const [mois, setMois] = useState(aujourdhui.getMonth() + 1)
     const client = useQueryClient()
+    const navigate = useNavigate()
 
     const synthese = useSynthese(annee, mois)
     const volumes = useVolumes(annee)
@@ -180,7 +182,7 @@ export default function TableauDeBord() {
                             </TableHeader>
                             <TableBody>
                                 {(attente.data ?? []).map((f) => (
-                                    <TableRow key={f.id}>
+                                    <TableRow key={f.id} className="cursor-pointer" onClick={() => navigate(`/factures/${f.id}`)}>
                                         <TableCell className="font-mono text-xs">{f.numero}</TableCell>
                                         <TableCell>{f.transporteur}</TableCell>
                                         <TableCell>{date(f.generee)}</TableCell>

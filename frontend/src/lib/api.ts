@@ -27,7 +27,7 @@ export function quandSessionExpiree(action: () => void): void {
     surSessionExpiree = action
 }
 
-export async function api<T>(chemin: string, options: RequestInit = {}): Promise<T> {
+async function appeler(chemin: string, options: RequestInit = {}): Promise<Response> {
     const entetes = new Headers(options.headers)
     const jeton = lireJeton()
     if (jeton) entetes.set("Authorization", `Bearer ${jeton}`)
@@ -58,8 +58,29 @@ export async function api<T>(chemin: string, options: RequestInit = {}): Promise
         if (reponse.status === 403) message = "Vous n'avez pas le droit de faire cette opération."
         throw new ErreurApi(reponse.status, message, code)
     }
-    const texte = await reponse.text()
+    return reponse
+}
+
+export async function api<T>(chemin: string, options: RequestInit = {}): Promise<T> {
+    const texte = await (await appeler(chemin, options)).text()
     return (texte ? JSON.parse(texte) : undefined) as T
+}
+
+/** Télécharge un fichier (PDF, Excel) en envoyant le jeton, avec le nom donné par le serveur. */
+export async function telecharger(chemin: string): Promise<void> {
+    const reponse = await appeler(chemin)
+    const dispo = reponse.headers.get("Content-Disposition") ?? ""
+    const nomEncode = /filename\*=UTF-8''([^;]+)/i.exec(dispo)?.[1]
+    const nom = nomEncode ? decodeURIComponent(nomEncode) : /filename="?([^";]+)"?/i.exec(dispo)?.[1] ?? "export"
+
+    const url = URL.createObjectURL(await reponse.blob())
+    const lien = document.createElement("a")
+    lien.href = url
+    lien.download = nom
+    document.body.appendChild(lien)
+    lien.click()
+    lien.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 export function messageErreur(e: unknown): string {

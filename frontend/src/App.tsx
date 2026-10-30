@@ -1,9 +1,11 @@
-import TableauDeBord from "@/features/tableau-de-bord/TableauDeBord"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router"
 import { Autorisation, RouteProtegee } from "@/auth/Protections"
 import Coquille from "@/layout/Coquille"
 import Connexion from "@/pages/Connexion"
 import EnConstruction from "@/pages/EnConstruction"
+import TableauDeBord from "@/features/tableau-de-bord/TableauDeBord"
+import ListeFactures from "@/features/factures/ListeFactures"
+import PageFacture from "@/features/factures/PageFacture"
 
 export default function App() {
   return (
@@ -14,7 +16,9 @@ export default function App() {
             <Route index element={
               <Autorisation permission="TABLEAU_DE_BORD_CONSULTER"><TableauDeBord /></Autorisation>} />
             <Route path="factures" element={
-              <Autorisation permission="FACTURES_CONSULTER"><EnConstruction titre="Factures" /></Autorisation>} />
+              <Autorisation permission="FACTURES_CONSULTER"><ListeFactures /></Autorisation>} />
+            <Route path="factures/:id" element={
+              <Autorisation permission="FACTURES_CONSULTER"><PageFacture /></Autorisation>} />
             <Route path="generation" element={
               <Autorisation permission="FACTURES_GENERER"><EnConstruction titre="Génération" /></Autorisation>} />
             <Route path="accpac" element={
