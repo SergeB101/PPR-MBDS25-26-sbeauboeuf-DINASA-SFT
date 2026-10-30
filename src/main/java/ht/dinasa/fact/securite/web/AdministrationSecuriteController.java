@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,13 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/v1/securite")
 class AdministrationSecuriteController {
+
+    record DemandeUtilisateur(@NotBlank @Size(max = 20) String login, @NotBlank @Size(max = 50) String nom,
+                              @Size(max = 50) String prenom, @NotNull Long idGroupe) {
+    }
+
+    record DemandeModification(@NotNull Long idGroupe, @NotNull Boolean actif) {
+    }
 
     record DemandeDroits(@NotNull Set<Permission> permissions, @Size(max = 500) String motif) {
     }
@@ -60,5 +68,17 @@ class AdministrationSecuriteController {
     @PutMapping("/groupes/{id}/permissions")
     GroupeVue modifier(@PathVariable long id, @Valid @RequestBody DemandeDroits d) {
         return administration.modifierPermissions(id, d.permissions(), d.motif());
+    }
+
+    @Operation(summary = "Créer un utilisateur (renvoie son mot de passe temporaire, affiché une seule fois)")
+    @PostMapping("/utilisateurs")
+    AdministrationSecurite.MotDePasseTemporaire creer(@Valid @RequestBody DemandeUtilisateur d) {
+        return administration.creerUtilisateur(d.login(), d.nom(), d.prenom(), d.idGroupe());
+    }
+
+    @Operation(summary = "Changer le groupe d'un utilisateur, le désactiver ou le réactiver")
+    @PatchMapping("/utilisateurs/{id}")
+    void modifier(@PathVariable long id, @Valid @RequestBody DemandeModification d) {
+        administration.modifierUtilisateur(id, d.idGroupe(), d.actif());
     }
 }

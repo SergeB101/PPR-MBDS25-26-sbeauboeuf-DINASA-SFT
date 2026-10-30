@@ -130,4 +130,27 @@ class SecuriteTests {
                 .isInstanceOf(ErreurMetier.class)
                 .extracting(e -> ((ErreurMetier) e).getCode()).isEqualTo("DERNIER_ADMINISTRATEUR");
     }
+
+    @Test
+    void creer_un_utilisateur_puis_le_desactiver_bloque_sa_connexion() {
+        long groupe = jdbc.sql("SELECT TOP 1 Group_ID FROM dbo.tbl_S_Group ORDER BY Group_ID").query(Long.class).single();
+        var temp = administration.creerUtilisateur("test.f6", "Test", "Utilisateur", groupe);
+
+        assertThat(authentification.connecter("test.f6", temp.motDePasse(), IP).doitChangerMotDePasse()).isTrue();
+
+        administration.modifierUtilisateur(temp.idUtilisateur(), groupe, false);
+        assertThatThrownBy(() -> authentification.connecter("test.f6", temp.motDePasse(), IP))
+                .satisfies(e -> assertThat(raison(e)).isEqualTo(Raison.COMPTE_INACTIF));
+    }
+
+    @Test
+    void un_login_deja_pris_est_refuse() {
+        String existant = jdbc.sql("SELECT TOP 1 RTRIM(LTRIM(USER_ID)) FROM dbo.tbl_S_User ORDER BY ID")
+                .query(String.class).single();
+        long groupe = jdbc.sql("SELECT TOP 1 Group_ID FROM dbo.tbl_S_Group ORDER BY Group_ID").query(Long.class).single();
+
+        assertThatThrownBy(() -> administration.creerUtilisateur(existant, "X", "Y", groupe))
+                .isInstanceOf(ErreurMetier.class)
+                .extracting(e -> ((ErreurMetier) e).getCode()).isEqualTo("LOGIN_EXISTANT");
+    }
 }

@@ -100,6 +100,50 @@ public class AdministrationSecurite {
         return permissions.groupes().stream().filter(g -> g.id() == idGroupe).findFirst().orElseThrow();
     }
 
+    /** Crée l'utilisateur et lui donne aussitôt un mot de passe temporaire (affiché une seule fois). */
+    @Transactional
+    public MotDePasseTemporaire creerUtilisateur(String login, String nom, String prenom, long idGroupe) {
+        String l = login == null ? "" : login.trim();
+        if (!l.matches("[A-Za-z0-9._-]{3,20}")) {
+            throw new ErreurMetier("LOGIN_INVALIDE", "Le nom d'utilisateur doit faire 3 à 20 caractères : "
+                    + "lettres sans accent, chiffres, point, tiret ou souligné.");
+        }
+        if (nom == null || nom.isBlank()) {
+            throw new ErreurMetier("NOM_OBLIGATOIRE", "Le nom est obligatoire.");
+        }
+        if (comptes.loginExiste(l)) {
+            throw new ErreurMetier("LOGIN_EXISTANT", "Le nom d'utilisateur « " + l + " » existe déjà.");
+        }
+        if (!permissions.groupeExiste(idGroupe)) {
+            throw new ErreurMetier("GROUPE_INTROUVABLE", "Groupe introuvable : " + idGroupe);
+        }
+        long id = comptes.creerUtilisateur(l, nom.trim().toUpperCase(), prenom == null ? "" : prenom.trim(),
+                idGroupe, maintenant(), utilisateur.login());
+        journal.enregistrer(new EntreeAudit("SECURITE_UTILISATEUR_CREE", "UTILISATEUR", String.valueOf(id), null,
+                null, null, Map.of("login", l, "groupe", idGroupe)));
+        return motDePasseTemporaire(id);
+    }
+
+    /** Changer de groupe, désactiver ou réactiver. Une désactivation déconnecte immédiatement. */
+    @Transactional
+    public void modifierUtilisateur(long id, long idGroupe, boolean actif) {
+        Compte c = compte(id);
+        boolean moiMeme = c.login().equalsIgnoreCase(utilisateur.login());
+        if (moiMeme && (!actif || idGroupe != c.idGroupe())) {
+            throw new ErreurMetier("MODIFICATION_DE_SOI",
+                    "Vous ne pouvez pas désactiver votre propre compte ni changer votre propre groupe.");
+        }
+        if (!permissions.groupeExiste(idGroupe)) {
+            throw new ErreurMetier("GROUPE_INTROUVABLE", "Groupe introuvable : " + idGroupe);
+        }
+        comptes.modifierUtilisateur(id, idGroupe, actif, maintenant(), utilisateur.login());
+        if (!actif) {
+            comptes.revoquer(id);
+        }
+        journal.enregistrer(new EntreeAudit("SECURITE_UTILISATEUR_MODIFIE", "UTILISATEUR", String.valueOf(id), null,
+                null, Map.of("groupe", c.idGroupe(), "actif", c.actif()), Map.of("groupe", idGroupe, "actif", actif)));
+    }
+
     private Compte compte(long id) {
         return comptes.parId(id).orElseThrow(() ->
                 new ErreurMetier("UTILISATEUR_INTROUVABLE", "Utilisateur introuvable : " + id));

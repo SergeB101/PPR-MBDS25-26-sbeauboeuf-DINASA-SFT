@@ -36,4 +36,11 @@ public interface DepotComptes {
     int revoquer(long id);
 
     void journaliserConnexion(String login, String resultat, String ip, LocalDateTime le);
+
+    boolean loginExiste(String login);
+
+    /** Crée la fiche dans dbo.tbl_S_User (table de l'ancienne application) et renvoie son ID. */
+    long creerUtilisateur(String login, String nom, String prenom, long idGroupe, LocalDateTime le, String par);
+
+    void modifierUtilisateur(long id, long idGroupe, boolean actif, LocalDateTime le, String par);
 }

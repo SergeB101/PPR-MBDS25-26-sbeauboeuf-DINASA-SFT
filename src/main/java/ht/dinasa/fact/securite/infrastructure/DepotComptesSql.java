@@ -62,6 +62,33 @@ class DepotComptesSql implements DepotComptes {
             INSERT INTO APP.JOURNAL_CONNEXION (DATE_CONNEXION, LOGIN, RESULTAT, IP) VALUES (:le, :login, :resultat, :ip)
             """;
 
+    private static final String LOGIN_EXISTE =
+            "SELECT COUNT(*) FROM dbo.tbl_S_User WHERE RTRIM(LTRIM(USER_ID)) = :login";
+
+    private static final String ID_AUTOMATIQUE =
+            "SELECT ISNULL(COLUMNPROPERTY(OBJECT_ID('dbo.tbl_S_User'), 'ID', 'IsIdentity'), 0)";
+
+    private static final String CREER_ID_AUTOMATIQUE = """
+            INSERT INTO dbo.tbl_S_User
+                   (USER_ID, Nom, Prenom, Group_ID, ActifYN, ConnecterYN, MustChangePassword, IsForcedOut, CreatedBy, DateCreated)
+            OUTPUT INSERTED.ID
+            VALUES (:login, :nom, :prenom, :groupe, 1, 0, 1, 0, :par, :le)
+            """;
+
+    private static final String CREER_ID_CALCULE = """
+            INSERT INTO dbo.tbl_S_User
+                   (ID, USER_ID, Nom, Prenom, Group_ID, ActifYN, ConnecterYN, MustChangePassword, IsForcedOut, CreatedBy, DateCreated)
+            OUTPUT INSERTED.ID
+            SELECT ISNULL(MAX(ID), 0) + 1, :login, :nom, :prenom, :groupe, 1, 0, 1, 0, :par, :le
+              FROM dbo.tbl_S_User WITH (UPDLOCK, HOLDLOCK)
+            """;
+
+    private static final String MODIFIER = """
+            UPDATE dbo.tbl_S_User
+               SET Group_ID = :groupe, ActifYN = :actif, ModifBy = :par, DateModif = :le
+             WHERE ID = :id
+            """;
+
     private final JdbcClient jdbc;
 
     DepotComptesSql(JdbcClient jdbc) {
@@ -114,6 +141,27 @@ class DepotComptesSql implements DepotComptes {
     @Override
     public void journaliserConnexion(String login, String resultat, String ip, LocalDateTime le) {
         jdbc.sql(JOURNAL).param("le", le).param("login", login).param("resultat", resultat).param("ip", ip).update();
+    }
+
+    @Override
+    public boolean loginExiste(String login) {
+        return jdbc.sql(LOGIN_EXISTE).param("login", login).query(Integer.class).single() > 0;
+    }
+
+    @Override
+    public long creerUtilisateur(String login, String nom, String prenom, long idGroupe, LocalDateTime le, String par) {
+        // Selon la base, l'ID est numéroté automatiquement ou non : on s'adapte.
+        boolean automatique = jdbc.sql(ID_AUTOMATIQUE).query(Integer.class).single() == 1;
+        return jdbc.sql(automatique ? CREER_ID_AUTOMATIQUE : CREER_ID_CALCULE)
+                .param("login", login).param("nom", nom).param("prenom", prenom).param("groupe", idGroupe)
+                .param("par", par).param("le", le)
+                .query(Long.class).single();
+    }
+
+    @Override
+    public void modifierUtilisateur(long id, long idGroupe, boolean actif, LocalDateTime le, String par) {
+        jdbc.sql(MODIFIER).param("id", id).param("groupe", idGroupe).param("actif", actif)
+                .param("par", par).param("le", le).update();
     }
 
     private Compte versCompte(ResultSet rs, int n) throws SQLException {
