@@ -6,6 +6,7 @@ import EnConstruction from "@/pages/EnConstruction"
 import TableauDeBord from "@/features/tableau-de-bord/TableauDeBord"
 import ListeFactures from "@/features/factures/ListeFactures"
 import PageFacture from "@/features/factures/PageFacture"
+import PageGeneration from "@/features/generation/PageGeneration"
 
 export default function App() {
   return (
@@ -20,7 +21,7 @@ export default function App() {
             <Route path="factures/:id" element={
               <Autorisation permission="FACTURES_CONSULTER"><PageFacture /></Autorisation>} />
             <Route path="generation" element={
-              <Autorisation permission="FACTURES_GENERER"><EnConstruction titre="Génération" /></Autorisation>} />
+              <Autorisation permission="FACTURES_GENERER"><PageGeneration /></Autorisation>} />
             <Route path="accpac" element={
               <Autorisation permission="ACCPAC_CONSULTER"><EnConstruction titre="ACCPAC" /></Autorisation>} />
             <Route path="referentiel" element={
