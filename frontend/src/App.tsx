@@ -7,6 +7,7 @@ import TableauDeBord from "@/features/tableau-de-bord/TableauDeBord"
 import ListeFactures from "@/features/factures/ListeFactures"
 import PageFacture from "@/features/factures/PageFacture"
 import PageGeneration from "@/features/generation/PageGeneration"
+import PageAccpac from "@/features/accpac/PageAccpac"
 
 export default function App() {
   return (
@@ -23,7 +24,7 @@ export default function App() {
             <Route path="generation" element={
               <Autorisation permission="FACTURES_GENERER"><PageGeneration /></Autorisation>} />
             <Route path="accpac" element={
-              <Autorisation permission="ACCPAC_CONSULTER"><EnConstruction titre="ACCPAC" /></Autorisation>} />
+              <Autorisation permission="ACCPAC_CONSULTER"><PageAccpac /></Autorisation>} />
             <Route path="referentiel" element={
               <Autorisation permission="REFERENTIEL_CONSULTER"><EnConstruction titre="Référentiel" /></Autorisation>} />
             <Route path="acces" element={
