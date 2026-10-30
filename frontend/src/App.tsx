@@ -2,12 +2,14 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router"
 import { Autorisation, RouteProtegee } from "@/auth/Protections"
 import Coquille from "@/layout/Coquille"
 import Connexion from "@/pages/Connexion"
-import EnConstruction from "@/pages/EnConstruction"
+//import EnConstruction from "@/pages/EnConstruction"
 import TableauDeBord from "@/features/tableau-de-bord/TableauDeBord"
 import ListeFactures from "@/features/factures/ListeFactures"
 import PageFacture from "@/features/factures/PageFacture"
 import PageGeneration from "@/features/generation/PageGeneration"
 import PageAccpac from "@/features/accpac/PageAccpac"
+import PageReferentiel from "@/features/referentiel/PageReferentiel"
+import PageAcces from "@/features/acces/PageAcces"
 
 export default function App() {
   return (
@@ -26,9 +28,9 @@ export default function App() {
             <Route path="accpac" element={
               <Autorisation permission="ACCPAC_CONSULTER"><PageAccpac /></Autorisation>} />
             <Route path="referentiel" element={
-              <Autorisation permission="REFERENTIEL_CONSULTER"><EnConstruction titre="Référentiel" /></Autorisation>} />
+              <Autorisation permission="REFERENTIEL_CONSULTER"><PageReferentiel /></Autorisation>} />
             <Route path="acces" element={
-              <Autorisation permission="SECURITE_ADMINISTRER"><EnConstruction titre="Gestion des accès" /></Autorisation>} />
+              <Autorisation permission="SECURITE_ADMINISTRER"><PageAcces /></Autorisation>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
